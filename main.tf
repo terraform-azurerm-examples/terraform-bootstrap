@@ -6,6 +6,10 @@ provider "random" {
   version = "~> 2.2"
 }
 
+provider "local" {
+  version = "~> 1.4"
+}
+
 provider "azurerm" {
   version = "~> 2.9"
   features {}
@@ -14,7 +18,7 @@ provider "azurerm" {
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_resource_group" "state" {
-  name     = var.name
+  name     = var.resource_group_name
   location = var.location
   tags     = var.tags
 }

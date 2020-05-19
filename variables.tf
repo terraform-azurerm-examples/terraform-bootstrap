@@ -1,5 +1,5 @@
-variable "name" {
-  description = "Name. Used for the resource-group and other identifiers."
+variable "resource_group_name" {
+  description = "Name. Used for the resource-group."
   type        = string
   default     = "terraform-state"
 }
@@ -16,16 +16,16 @@ variable "tags" {
   default     = {}
 }
 
-variable "terraform_state_group" {
+variable "terraform_state_aad_group" {
   description = "Name of the AAD security group for managing Terraform state and key vault secrets."
   type        = string
   default     = ""
 }
 
 variable "service_principal_name" {
-  description = "Name for the terraform state service principal. Defaults to var.name."
+  description = "Name for the terraform state service principal."
   type        = string
-  default     = ""
+  default     = "terraform"
 }
 
 variable "service_principal_suffix" {
@@ -41,4 +41,22 @@ variable "service_principal_rbac_assignments" {
     scope = string
   }))
   default = []
+}
+
+variable "backend" {
+  description = "Output filename for backend configuration, e.g. backend.tf"
+  type        = string
+  default     = ""
+}
+
+variable "container" {
+  description = "Name for the container used to store tfstate files."
+  type        = string
+  default     = "tfstate"
+}
+
+variable "blob" {
+  description = "Name for the blob file used to store the terraform state."
+  type        = string
+  default     = "terraform.tfstate"
 }

@@ -1,19 +1,18 @@
 locals {
-  service_principal_prefix = length(var.service_principal_name) > 0 ? var.service_principal_name : var.name
-  service_principal_name   = var.service_principal_suffix ? "${local.service_principal_prefix}-${random_string.terraform.result}" : local.service_principal_prefix
+  service_principal_name = var.service_principal_suffix ? "${var.service_principal_name}-${random_string.terraform.result}" : var.service_principal_name
 
   storage_rbac_assignment = [{
-    scope = azurerm_storage_account.tfstate.id,
+    scope = azurerm_storage_account.state.id,
     role  = "Storage Blob Data Contributor"
   }]
 
   rbac_assignments = {
     for assignment in var.service_principal_rbac_assignments :
-    md5(assignment) => assignment // Should remain as a predictable hash key
+    md5("${assignment.role}-${assignment.scope}") => assignment // Should remain as a predictable hash key
   }
 }
 
-resource "random_password" "terraform-state" {
+resource "random_password" "terraform" {
   length  = 128
   special = false
   upper   = true
@@ -21,7 +20,7 @@ resource "random_password" "terraform-state" {
   number  = true
 }
 
-resource "azuread_application" "terraform-state" {
+resource "azuread_application" "terraform" {
   name = local.service_principal_name
 
   required_resource_access {
@@ -39,20 +38,20 @@ resource "azuread_application" "terraform-state" {
   }
 }
 
-resource "azuread_service_principal" "terraform-state" {
-  application_id = azuread_application.terraform-state.application_id
+resource "azuread_service_principal" "terraform" {
+  application_id = azuread_application.terraform.application_id
 }
 
-resource "azuread_service_principal_password" "terraform-state" {
-  service_principal_id = azuread_service_principal.terraform-state.id
-  value                = random_password.terraform-state.result
+resource "azuread_service_principal_password" "terraform" {
+  service_principal_id = azuread_service_principal.terraform.id
+  value                = random_password.terraform.result
   end_date_relative    = "43200m"
 }
 
 resource "azurerm_role_assignment" "terraform-state-storage" {
-  scope                = azurerm_storage_account.tfstate.id
+  scope                = azurerm_storage_account.state.id
   role_definition_name = "Storage Blob Data Contributor"
-  principal_id         = azuread_service_principal.terraform-state.object_id
+  principal_id         = azuread_service_principal.terraform.object_id
 }
 
 
@@ -61,5 +60,5 @@ resource "azurerm_role_assignment" "terraform-state-rbac" {
 
   scope                = each.value["scope"]
   role_definition_name = each.value["role"]
-  principal_id         = azuread_service_principal.terraform-state.object_id
+  principal_id         = azuread_service_principal.terraform.object_id
 }
