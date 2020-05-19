@@ -12,11 +12,11 @@ Creates a service principal for use by Terraform, as well as setting up the stor
 
 Can output a backend.tf file if var.backend is specified.
 
-**Add diagram and more info plus list of variables**
+**Add diagram and more info plus list of variables.**
 
 ## Example use
 
-You can then refer to the key vault's secrets to drive servicce principal usage
+You can then refer to the key vault's secrets to drive service principal usage
 
 ### backend.tf
 
@@ -35,7 +35,7 @@ terraform {
 
 ```hcl
 provider "azurerm" {
-  // Rides on Azure CLI token or env vars to access the keyvault unless managed identoty is used
+  // Rides on Azure CLI token or env vars to access the keyvault unless managed identity is used
   features {}
   alias   = "genesis"
   use_msi = false
