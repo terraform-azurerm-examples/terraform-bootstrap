@@ -49,6 +49,12 @@ variable "backend" {
   default     = ""
 }
 
+variable "backend_full" {
+  description = "Boolean to trigger extended backend.tf creation. See README.md."
+  type        = bool
+  default     = false
+}
+
 variable "container" {
   description = "Name for the container used to store tfstate files."
   type        = string

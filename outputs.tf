@@ -51,14 +51,17 @@ output "key_vault_id" {
 }
 
 output "backend" {
-  value = <<BACKEND
-terraform {
-  backend "azurerm" {
-    resource_group_name  = "${azurerm_resource_group.state.name}"
-    storage_account_name = "${azurerm_storage_account.state.name}"
-    container_name       = "${var.container}"
-    key                  = "${var.blob}"
-  }
+  value = local.backend
 }
-BACKEND
+
+output "backend_full" {
+  value = local.backend_full
+}
+
+output "example_provider_variables" {
+  value = <<PROVIDER
+  tenant_id     = data.azurerm_key_vault_secret.tenant_id.value
+  client_id     = data.azurerm_key_vault_secret.client_id.value
+  client_secret = data.azurerm_key_vault_secret.client_secret.value
+PROVIDER
 }
