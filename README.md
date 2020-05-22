@@ -65,9 +65,18 @@ terraform {
 
 ### Full backend.tf
 
-If you also specify `backend_full=true` then it will create a larger config.
+If you also specify `backend_full=true` then it will create a larger config. E.g.:
 
 ```hcl
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "terraform-state"
+    storage_account_name = "terraformi9s2gsfcjefvmqb"
+    container_name       = "tfstate"
+    key                  = "terraform.tfstate"
+  }
+}
+
 provider "azurerm" {
   // Uses the Azure CLI token (or env vars) unless managed identity is used
   features {}

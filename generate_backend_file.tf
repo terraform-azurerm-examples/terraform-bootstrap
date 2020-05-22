@@ -1,15 +1,26 @@
 locals {
 
   backend = <<BACKEND
-provider "azurerm" {
-  // Uses the Azure CLI token (or env vars) unless managed identity is used
-  features {}
-  alias   = "backend"
-  use_msi = false
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "${azurerm_resource_group.state.name}"
+    storage_account_name = "${azurerm_storage_account.state.name}"
+    container_name       = "${azurerm_storage_container.tfstate.name}"
+    key                  = "${var.blob}"
+  }
 }
 BACKEND
 
   backend_full = <<BACKEND_FULL
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "${azurerm_resource_group.state.name}"
+    storage_account_name = "${azurerm_storage_account.state.name}"
+    container_name       = "${azurerm_storage_container.tfstate.name}"
+    key                  = "${var.blob}"
+  }
+}
+
 provider "azurerm" {
   // Uses the Azure CLI token (or env vars) unless managed identity is used
   features {}
