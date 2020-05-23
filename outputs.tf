@@ -65,3 +65,12 @@ output "example_provider_variables" {
   client_secret = data.azurerm_key_vault_secret.client_secret.value
 PROVIDER
 }
+
+output "example_environment_variables" {
+  value = <<ENVVARS
+export ARM_TENANT_ID=${data.azurerm_client_config.current.tenant_id}
+export ARM_SUBSCRIPTION_ID=$(az account show --output tsv --query id)
+export ARM_CLIENT_ID=${azuread_service_principal.terraform.application_id}
+export ARM_CLIENT_SECRET=$(az keyvault secret show --vault-name ${azurerm_key_vault.state.name} --name client-secret --output tsv --query value)
+ENVVARS
+}
