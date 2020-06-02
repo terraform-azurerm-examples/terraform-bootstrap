@@ -1,8 +1,8 @@
 resource "azurerm_key_vault" "state" {
-  name                = local.terraform_uniq
-  location            = azurerm_resource_group.state.location
-  resource_group_name = azurerm_resource_group.state.name
-  tags                = azurerm_resource_group.state.tags
+  name                = data.azurerm_storage_account.state.name
+  resource_group_name = data.azurerm_resource_group.state.name
+  location            = data.azurerm_resource_group.state.location
+  tags                = data.azurerm_resource_group.state.tags
 
   tenant_id                       = data.azurerm_client_config.current.tenant_id
   sku_name                        = "standard"
@@ -63,4 +63,11 @@ resource "azurerm_key_vault_access_policy" "terraform_state_aad_group" {
     "Set",
     "Delete"
   ]
+}
+
+resource "azurerm_key_vault_secret" "client_secret" {
+  depends_on   = [azurerm_key_vault_access_policy.terraform_state_owner]
+  name         = "client-secret"
+  key_vault_id = azurerm_key_vault.state.id
+  value        = azuread_service_principal_password.terraform.value
 }

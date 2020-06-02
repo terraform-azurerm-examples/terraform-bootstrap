@@ -17,20 +17,11 @@ provider "azurerm" {
 
 data "azurerm_client_config" "current" {}
 
-resource "azurerm_resource_group" "state" {
-  name     = var.resource_group_name
-  location = var.location
-  tags     = var.tags
-}
-
-resource "random_string" "terraform" {
-  length  = 15
-  special = false
-  lower   = true
-  upper   = false
-  number  = true
+data "azurerm_resource_group" "state" {
+  name = var.resource_group_name
 }
 
 locals {
-  terraform_uniq = "terraform${random_string.terraform.result}"
+  location = coalesce(var.location, data.azurerm_resource_group.state.location)
+  tags     = merge(data.azurerm_resource_group.state.tags, var.tags)
 }

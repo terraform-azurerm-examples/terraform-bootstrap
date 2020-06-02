@@ -1,8 +1,8 @@
 locals {
-  service_principal_name = var.service_principal_suffix ? "${var.service_principal_name}-${random_string.terraform.result}" : var.service_principal_name
+  service_principal_name = length(var.service_principal_name) > 0 ? var.service_principal_name : data.azurerm_storage_account.state.name
 
   storage_rbac_assignment = [{
-    scope = azurerm_storage_account.state.id,
+    scope = data.azurerm_storage_account.state.id,
     role  = "Storage Blob Data Contributor"
   }]
 
@@ -48,17 +48,17 @@ resource "azuread_service_principal_password" "terraform" {
   end_date_relative    = "43200m"
 }
 
-resource "azurerm_role_assignment" "terraform-state-storage" {
-  scope                = azurerm_storage_account.state.id
+resource "azurerm_role_assignment" "storage_blob_contributor_service_principal" {
+  scope                = data.azurerm_storage_account.state.id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azuread_service_principal.terraform.object_id
 }
 
 
-resource "azurerm_role_assignment" "terraform-state-rbac" {
+resource "azurerm_role_assignment" "custom_rbac_assignments" {
   for_each = local.rbac_assignments
 
-  scope                = each.value["scope"]
+  scope                = length(regexall("^[Cc]urrent$", each.value["scope"])) > 0 ? "/subscriptions/${data.azurerm_client_config.current.subscription_id}" : each.value["scope"]
   role_definition_name = each.value["role"]
   principal_id         = azuread_service_principal.terraform.object_id
 }

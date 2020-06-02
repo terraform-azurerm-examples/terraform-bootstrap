@@ -1,13 +1,24 @@
 variable "resource_group_name" {
-  description = "Name. Used for the resource-group."
+  description = "Name of the resource group."
   type        = string
-  default     = "terraform-state"
+  default     = "terraform"
+}
+
+variable "storage_account_name" {
+  description = "Storage account name. Re-used for the service principal, workspace, etc."
+  type        = string
+}
+
+variable "container_name" {
+  description = "Name for the container used to store tfstate files."
+  type        = string
+  default     = "tfstate"
 }
 
 variable "location" {
   description = "Azure region to deploy the launchpad in the short form."
   type        = string
-  default     = "westeurope"
+  default     = ""
 }
 
 variable "tags" {
@@ -17,21 +28,15 @@ variable "tags" {
 }
 
 variable "terraform_state_aad_group" {
-  description = "Name of the AAD security group for managing Terraform state and key vault secrets."
+  description = "Name of the optional AAD security group for managing Terraform state and key vault secrets."
   type        = string
   default     = ""
 }
 
 variable "service_principal_name" {
-  description = "Name for the terraform state service principal."
+  description = "Name for the terraform state service principal. Defaults to the storage account name"
   type        = string
-  default     = "terraform"
-}
-
-variable "service_principal_suffix" {
-  description = "Boolean to suffix unique string to service_principal_name."
-  type        = bool
-  default     = true
+  default     = ""
 }
 
 variable "service_principal_rbac_assignments" {
@@ -43,26 +48,8 @@ variable "service_principal_rbac_assignments" {
   default = []
 }
 
-variable "backend" {
-  description = "Output filename for backend configuration, e.g. backend.tf"
-  type        = string
-  default     = ""
-}
-
-variable "backend_full" {
-  description = "Boolean to trigger extended backend.tf creation. See README.md."
-  type        = bool
-  default     = false
-}
-
-variable "container" {
-  description = "Name for the container used to store tfstate files."
-  type        = string
-  default     = "tfstate"
-}
-
-variable "blob" {
-  description = "Name for the blob file used to store the terraform state."
+variable "blob_name" {
+  description = "Name for the terraform state blob file name that will be used in output backend.tf configurations."
   type        = string
   default     = "terraform.tfstate"
 }
