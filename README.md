@@ -24,17 +24,11 @@ The command block below will create those resource and generate boostrap_backend
 
 First, log in on the CLI to Azure and check that you are in the right context using `az account show --output jsonc`
 
-Run the following commands:
+Run the following command:
 
 ```bash
-location=westeurope
-resource_group_name=terraform
-container=tfstate
-
 ./bootstrap_backend.sh
 ```
-
-Customise the values if required.
 
 ## terraform.tfvars
 
