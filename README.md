@@ -1,28 +1,33 @@
 # terraform-state-singletenant
 
+## Background
+
+It is easy to set up a service principal in Azure for Terraform use, but in production there are some good questions:
+
+1. Where do I store the credentials?
+1. How do I give the right access to read those credentials?
+1. How do I track who has accessed the credentials?
+1. How do I safely reference those credentials without including secrets in my Terraform root modules?
+1. What can those other root modules use as their backend state?
+
+This repo addresses those concerns, and is helpful in bootstrapping a single tenant environment.
+
 ## Overview
 
 Bootstraps a single tenant environment for Terraform use, creating:
 
 * Azure Key Vault including access policies and set of secrets
 * Log Analytics Workspace for logging secret access to the storage accounts
-* Shared Image Gallery
 * Service Principal for Terraform use, with optional RBAC assignments
 * RBAC assignments for the owner plus optional AAD group
 * Resource lock on the resource group to avoid accidental deletes
 * Set of outputs
 
-### Pre-requirements
+## Context
 
-Pre-reqs are:
+Before running the bootstrap , log in on the CLI to Azure and check that you are in the right context using `az account show --output jsonc`
 
-* resource group
-* storage account with a container
-* azurerm backend file
-
-The command block below will create those resource and generate boostrap_backend.tf and boostrap_backend.auto.tfvars files for you.
-
-First, log in on the CLI to Azure and check that you are in the right context using `az account show --output jsonc`
+## Bootstrap
 
 Run the following command:
 
@@ -30,9 +35,22 @@ Run the following command:
 ./bootstrap_backend.sh
 ```
 
-## terraform.tfvars
+The script will create
 
-Create a valid terraform.tfvars file to override the defaults. Example below:
+* resource group with you as Owner
+* storage account (plus container) with you as Storage Blob Data Owner
+* boostrap_backend.tf
+* boostrap_backend.auto.tfvars containing
+  * resource_group_name
+  * storage_account_name
+  * container_name
+  * azurerm_version_constraint
+
+> The azurerm_version will attempt to pull the latest version from the repo. E.g. "~> 2.15"
+
+## Overriding the variable defaults
+
+If you wish to override the variable defaults then create a valid terraform.tfvars. Example below:
 
 ```terraform
 terraform_state_aad_group = "terraform-state"
@@ -46,11 +64,25 @@ service_principal_rbac_assignments = [
 ]
 ```
 
+> The service_principal_rbac_assignments array defaults to [] and will therefore give the service principal no RBAC permissions. You can either define the role assignments here to capture it as code, or assign manually in the portal. Note that you can use `"Current"` as the scope value and it willsubstitute it with the subscriptionId for the current context.
+
+## Resources created
+
+* Service principal with random password
+* Key vault with access policies for owner and service principal
+* Secrets for the client id and secret
+* Log analytics workspace with setting for the key vault
+* Storage account role assignments
+* Optional RBAC role assignments if specified
+* Generated files in the outputs subfolder
+
+If an AAD group was specified then it will also be given access to the storage account and key vault.
+
 ## Outputs
 
-## List of outputs
+### Terraform Outputs
 
-String values:
+Simple string values:
 
 * tenant_id
 * resource_group_name
@@ -66,6 +98,8 @@ String values:
 * key_vault_name
 * key_vault_id
 
+> The app_id and client_id outputs are the same, but are provided for convenience.
+
 HCL compliant text blocks:
 
 * backend
@@ -73,83 +107,33 @@ HCL compliant text blocks:
 * provider_variables
 * environment_variables
 
-> The app_id and client_id outputs are the same, but are provided for convenience.
+> Example use: `terraform output environment_variables >> ~/.bashrc`
 
-### backend
+### Output Files
 
-Create a backend.tf file:
+The following files are generated, and may be copied into new Terraform root modules to quickly make use of the service principal, key vault and storage account.
 
+* outputs/azurerm_provider.tf
+* outputs/backend.tf
+* outputs/client_secret.tf
 
-```bash
-terraform output backend > /path/to/backend.tf
-```
+> You are not compelled to use the files as is, or at all.
 
-Example file:
+## Test
 
-```hcl
-terraform {
-  backend "azurerm" {
-    resource_group_name  = "terraform-state"
-    storage_account_name = "terraformi9s2gsfcjefvmqb"
-    container_name       = "tfstate"
-    key                  = "terraform.tfstate"
-  }
-}
-```
+1. Create a new directory containing the files. e.g.
 
-### client_secret
+    ```bash
+    mkdir -m 755 /git/myTerraformTest
+    cp outputs/*.tf /git/myTerraformTest
+    cd /git/myTerraformTest
+    ```
 
-Create a client_secret.tf file:
+1. Edit the name of the key in the backend.tf file
 
-```bash
-terraform output backend > /path/to/client_secret.tf
-```
+1. `terraform init`
+1. `terraform validate`
+1. `terraform plan`
+1. `terraform apply`
 
-Example file:
-
-```hcl
-provider "azurerm" {
-  // Uses the Azure CLI token (or env vars) unless managed identity is used
-  features {}
-  alias   = "backend"
-  use_msi = false
-}
-
-data "azurerm_key_vault_secret" "client_secret" {
-  provider     = azurerm.backend
-  key_vault_id = "/subscriptions/2d31be49-d959-4415-bb65-8aec2c90ba62/resourceGroups/terraform/providers/Microsoft.KeyVault/vaults/terraformsx80gl24bpp83fh"
-  name         = "client-secret"
-}
-```
-
-## Using the client_secret
-
-Display the provider_variables output.
-
-```bash
-terraform output provider_variables
-```
-
-Example output:
-
-```terraform
-
-  tenant_id     = "f246eeb7-b820-4971-a083-9e100e084ed0"
-  client_id     = "9306c4f0-3049-415c-84fd-2e0e6c416c78"
-  client_secret = data.azurerm_key_vault_secret.client_secret.value
-
-```
-
-Copy and paste into your provider block, e.g.
-
-```terraform
-provider "azurerm" {
-  version = "~> 2.12.0"
-  features {}
-
-  subscription_id = "9a52c25a-b883-437e-80a6-f5fc2bccd44e"
-  tenant_id       = "f246eeb7-b820-4971-a083-9e100e084ed0"
-  client_id       = "9306c4f0-3049-415c-84fd-2e0e6c416c78"
-  client_secret   = data.azurerm_key_vault_secret.client_secret.value
-}
-```
+The config will successfully use the service principal and store the state file in the storage account.

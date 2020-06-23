@@ -53,3 +53,9 @@ variable "blob_name" {
   type        = string
   default     = "terraform.tfstate"
 }
+
+variable "azurerm_version_constraint" {
+  description = "Specify the azurerm version constraint to be used in the generated azurerm_provider.tf file."
+  type        = string
+  default     = "~> 2.0"
+}

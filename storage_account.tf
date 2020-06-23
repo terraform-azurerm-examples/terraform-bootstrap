@@ -13,8 +13,8 @@ data "azurerm_storage_account" "state" {
 }
 
 data "azurerm_storage_container" "tfstate" {
-  name                  = var.container_name
-  storage_account_name  = data.azurerm_storage_account.state.name
+  name                 = var.container_name
+  storage_account_name = data.azurerm_storage_account.state.name
 }
 
 resource "azurerm_role_assignment" "terraform_state_owner" {
