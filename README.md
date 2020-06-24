@@ -64,6 +64,8 @@ service_principal_rbac_assignments = [
 ]
 ```
 
+You will find an example file in the repo.
+
 > The service_principal_rbac_assignments array defaults to [] and will therefore give the service principal no RBAC permissions. You can either define the role assignments here to capture it as code, or assign manually in the portal. Note that you can use `"Current"` as the scope value and it willsubstitute it with the subscriptionId for the current context.
 
 ## Resources created
@@ -112,11 +114,14 @@ HCL compliant text blocks:
 
 The following files are generated, and may be copied into new Terraform root modules to quickly make use of the service principal, key vault and storage account.
 
-* outputs/azurerm_provider.tf
-* outputs/backend.tf
-* outputs/bootstrap_secrets.tf
+* bootstrap/azurerm_provider.tf
+* bootstrap/backend.tf
+* bootstrap/bootstrap_README.tf
+* bootstrap/bootstrap_secrets.tf
 
 > You are not compelled to use the files as is, or at all.
+
+These files are also added as blobs into the storage account.
 
 ## Test
 
@@ -124,7 +129,7 @@ The following files are generated, and may be copied into new Terraform root mod
 
     ```bash
     mkdir -m 755 /git/myTerraformTest
-    cp outputs/*.tf /git/myTerraformTest
+    cp bootstrap/*.tf /git/myTerraformTest
     cd /git/myTerraformTest
     ```
 

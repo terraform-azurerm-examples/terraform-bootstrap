@@ -1,7 +1,6 @@
 .terraform/
 .terraform.*
 terraform.tf*
-terraform.tfvars
 bootstrap_backend.tf
 bootstrap_backend.auto.tfvars
 outputs/*
