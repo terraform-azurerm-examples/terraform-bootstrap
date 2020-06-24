@@ -89,7 +89,6 @@ Simple string values:
 * storage_account_name
 * storage_account_id
 * container_name
-* blob_name
 * app_id
 * app_object_id
 * sp_object_id
@@ -115,7 +114,7 @@ The following files are generated, and may be copied into new Terraform root mod
 
 * outputs/azurerm_provider.tf
 * outputs/backend.tf
-* outputs/client_secret.tf
+* outputs/bootstrap_secrets.tf
 
 > You are not compelled to use the files as is, or at all.
 

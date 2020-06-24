@@ -17,6 +17,13 @@ data "azurerm_storage_container" "tfstate" {
   storage_account_name = data.azurerm_storage_account.state.name
 }
 
+//=============================================================
+
+resource "azurerm_storage_container" "bootstrap" {
+  name                 = "bootstrap"
+  storage_account_name = data.azurerm_storage_account.state.name
+}
+
 resource "azurerm_role_assignment" "terraform_state_owner" {
   scope                = data.azurerm_storage_account.state.id
   role_definition_name = "Owner"

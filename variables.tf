@@ -48,12 +48,6 @@ variable "service_principal_rbac_assignments" {
   default = []
 }
 
-variable "blob_name" {
-  description = "Name for the terraform state blob file name that will be used in output backend.tf configurations."
-  type        = string
-  default     = "terraform.tfstate"
-}
-
 variable "azurerm_version_constraint" {
   description = "Specify the azurerm version constraint to be used in the generated azurerm_provider.tf file."
   type        = string

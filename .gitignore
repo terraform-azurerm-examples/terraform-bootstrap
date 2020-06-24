@@ -4,6 +4,5 @@ terraform.tf*
 terraform.tfvars
 bootstrap_backend.tf
 bootstrap_backend.auto.tfvars
-outputs/azurerm_provider.tf
-outputs/backend.tf
-outputs/client_secret.tf
+outputs/*
+bootstrap/*
