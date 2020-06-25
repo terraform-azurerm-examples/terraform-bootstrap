@@ -1,0 +1,18 @@
+terraform_state_aad_group = "My Terraform State Admins"
+
+service_principal_name = "terraform-test"
+
+service_principal_rbac_assignments = [
+  // {
+  //   role = "Contributor"
+  //   scope = "/subscriptions/2d31be49-d959-4415-bb65-8aec2c90ba62/resourceGroups/myResourceGroup"
+  // }.
+  // {
+  //   role = "Contributor"
+  //   scope = "/subscriptions/2ca40be1-7e80-4f2b-92f7-06b2123a68cc"
+  // },
+  {
+    role = "Contributor"
+    scope = "Current"
+  }
+]

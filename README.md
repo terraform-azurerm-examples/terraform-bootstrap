@@ -27,7 +27,11 @@ Bootstraps a single tenant environment for Terraform use, creating:
 
 Before running the bootstrap , log in on the CLI to Azure and check that you are in the right context using `az account show --output jsonc`
 
-## Bootstrap
+Your ID will need Owner level access to create the resources and role assignments.
+
+Note that you will need an appropriate Azure Active Directory role to read group information if specifying a value for the terraform_state_aad_group variable.
+
+## Bootstrap Script
 
 Run the following command:
 
@@ -48,6 +52,8 @@ The script will create
 
 > The azurerm_version will attempt to pull the latest version from the repo. E.g. "~> 2.15"
 
+This is the minimum required for the Terraform config to run given that the state file for the config should also be stored safely in remote state.
+
 ## Overriding the variable defaults
 
 If you wish to override the variable defaults then create a valid terraform.tfvars. Example below:
@@ -66,7 +72,17 @@ service_principal_rbac_assignments = [
 
 You will find an example file in the repo.
 
-> The service_principal_rbac_assignments array defaults to [] and will therefore give the service principal no RBAC permissions. You can either define the role assignments here to capture it as code, or assign manually in the portal. Note that you can use `"Current"` as the scope value and it willsubstitute it with the subscriptionId for the current context.
+> The service_principal_rbac_assignments array defaults to [] and will therefore give the service principal no RBAC permissions. You can either define the role assignments here to capture it as code, or assign manually in the portal. Note that you can use `"Current"` as the scope value and it will be substituted with the subscriptionId for the current context.
+
+## Terraform Apply
+
+Run through the Terraform flow to create the resources
+
+1. `terraform fmt`
+1. `terraform init`
+1. `terraform validate`
+1. `terraform plan`
+1. `terraform apply`
 
 ## Resources created
 
@@ -84,31 +100,33 @@ If an AAD group was specified then it will also be given access to the storage a
 
 ### Terraform Outputs
 
-Simple string values:
+E.g. `terraform output` or `terraform output tenant_id`
 
-* tenant_id
-* resource_group_name
-* storage_account_name
-* storage_account_id
-* container_name
-* app_id
-* app_object_id
-* sp_object_id
-* client_id
-* rbac_authorizations
-* key_vault_name
-* key_vault_id
+* Strings
+  * tenant_id
+  * resource_group_name
+  * storage_account_name
+  * storage_account_id
+  * container_name
+  * app_id
+  * app_object_id
+  * sp_object_id
+  * client_id
+  * key_vault_name
+  * key_vault_id
+* Array of objects
+  * rbac_authorizations
+* Multiline HCL text blocks
+  * azurerm_provider
+  * backend
+  * client_secret
+  * provider_variables
+* Multiline Bash commands
+  * environment_variables
+
+Example use: `terraform output environment_variables >> ~/.bashrc`
 
 > The app_id and client_id outputs are the same, but are provided for convenience.
-
-HCL compliant text blocks:
-
-* backend
-* client_secret
-* provider_variables
-* environment_variables
-
-> Example use: `terraform output environment_variables >> ~/.bashrc`
 
 ### Output Files
 
@@ -121,9 +139,11 @@ The following files are generated, and may be copied into new Terraform root mod
 
 > You are not compelled to use the files as is, or at all.
 
-These files are also added as blobs into the storage account.
+These files are also available as blobs in the storage account's bootstrap container.
 
-## Test
+![bootstrap_README](images/bootstrap_README.png)
+
+## Testing the outputs
 
 1. Create a new directory containing the files. e.g.
 
@@ -135,9 +155,21 @@ These files are also added as blobs into the storage account.
 
 1. Edit the name of the key in the backend.tf file
 
-1. `terraform init`
-1. `terraform validate`
-1. `terraform plan`
-1. `terraform apply`
+1. Run through the
+
+    1. `terraform init`
+    1. `terraform validate`
+    1. `terraform plan`
+    1. `terraform apply`
 
 The config will successfully use the service principal and store the state file in the storage account.
+
+> Note that the storage account also includes a bootstrap_README.md in the bootstrap container for easy ongoing access.
+
+## Future
+
+The current repo is based around a single tenant approach. Will look at a natural flow for a cross-tenant example.
+
+Allow existing service principals to be imported.
+
+Define an array of AAD objectIds to have access to the blobs and secrets. This will cover security principals (both user and service), security groups and managed identities.

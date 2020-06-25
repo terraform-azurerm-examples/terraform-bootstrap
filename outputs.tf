@@ -71,6 +71,12 @@ These include:
     * a bootstrap container that contains files to quickstart your Terraform configs
 * a log analytics workspace to track access to the key vault
 
+The files in this folder or container can be used in your Terraform root modules if you want to use the service principal and use the storage account to store your Terraform state.
+
+Note that the files are setup for command line terraform execution, and will access the key vault using the user's credentials. The user principal must have a key vault access policy granted to read the secrets, or belong to a security group that does.
+
+Additional information is provided for managed identity scenarios and for CI/CD pipelines.
+
 ## Directions
 
 1. Context
@@ -104,6 +110,10 @@ These include:
 
 1. Edit the backend.tf
 
+  The default value for the key in the backend.tf is an empty string, and you have to set it before running `terraform init`. This has been done intentionally so that there is a deliberate decision on the terraform state file name.
+
+  ***IMPORTANT!***: **Ensure that the name doesn't conflict with any existing Terraform state files in the tfstate container.**
+
   Set the key value to be the desired name of the terraform statefile. E.g.
 
   * "terraform.tfstate"
@@ -111,9 +121,9 @@ These include:
   * "clientname/hub.tfstate"
   * "clientname-hub.tfstate"
 
-  ***IMPORTANT!: Ensure that the name doesn't conflict with existing Terraform state files!***
+  You will now be able to run through the terraform lifecycle commands and start building up your config.
 
-You will now be able to run through the terraform lifecycle commands and start building up your config.
+  > If you ran `terraform init` whilst it was empty then see the the [troubleshooting](#troubleshooting) section.
 
 ## Managed Identity
 
@@ -135,6 +145,17 @@ If you are using a CI/CD pipeline then:
 
 * remove the matching attributes in azurerm_provider.tf
 * the bootstrap_secrets.tf file is not required
+
+## Troubleshooting
+
+#### Ran terraform init before setting the Terraform state file name
+
+1. Edit the backend.tf and change the key value fom an empty string to your desired terraform state file name
+1. Clean up the .terraform/terraform.tfstate JSON file. Either
+  * Delete the file
+  * Edit the file and set the value for .backend.config.key
+1. Rerun terraform init
+
 README
 
 }
@@ -143,6 +164,11 @@ README
 
 output "tenant_id" {
   value = data.azurerm_client_config.current.tenant_id
+}
+
+output "subscription_id" {
+  // The subscriptionId for the resource group, rather than any RBAC assignments
+  value = data.azurerm_client_config.current.subscription_id
 }
 
 output "resource_group_name" {
@@ -193,16 +219,17 @@ output "key_vault_id" {
   value = azurerm_key_vault.state.id
 }
 
+
+output "azurerm_provider" {
+  value = local.azurerm_provider_file
+}
+
 output "backend" {
   value = local.backend_file
 }
 
 output "bootstrap_secrets" {
   value = local.bootstrap_secrets_file
-}
-
-output "azurerm_provider" {
-  value = local.azurerm_provider_file
 }
 
 output "provider_variables" {
@@ -296,3 +323,5 @@ resource "azurerm_storage_blob" "readme" {
   type                   = "Block"
   source_content         = local.readme_file
 }
+
+//==================================================================
