@@ -1,4 +1,4 @@
-terraform_state_aad_group = "My Terraform State Admins"
+// terraform_state_aad_group = "My Terraform State Admins"
 
 service_principal_name = "terraform-test"
 
