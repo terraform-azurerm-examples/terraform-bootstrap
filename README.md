@@ -1,5 +1,14 @@
 # terraform-bootstrap
 
+## tl;dr
+
+Creates service principal, Terraform remote state storage account and key vault.
+
+1. `./bootstrap_backend.sh`
+1. `mv terraform.tfvars.example terraform.tfvars` then edit
+1. `terraform apply -auto-approve`
+1. View the bootstrap_README.md blob in bootstrap container
+
 ## Background
 
 It is easy to set up a service principal in Azure for Terraform use, but in production there are some good questions:
