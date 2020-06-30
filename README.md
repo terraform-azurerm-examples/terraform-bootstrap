@@ -6,8 +6,11 @@ Creates service principal, Terraform remote state storage account and key vault.
 
 1. `./bootstrap_backend.sh`
 1. `mv terraform.tfvars.example terraform.tfvars` then edit
-1. `terraform apply -auto-approve`
-1. View the bootstrap_README.md blob in bootstrap container
+1. `terraform init`
+1. `terraform apply`
+1. View the bootstrap_README.md blob in the storage account's bootstrap container
+
+If the script defaults have been selected then the resource group will be called terraform.
 
 ## Background
 
