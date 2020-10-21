@@ -10,7 +10,8 @@ resource "azurerm_key_vault" "state" {
   enabled_for_disk_encryption     = false
   enabled_for_template_deployment = false
   purge_protection_enabled        = false
-  soft_delete_enabled             = false
+  soft_delete_enabled             = true
+  soft_delete_retention_days      = 90
 
   network_acls {
     bypass                     = "AzureServices"
