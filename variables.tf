@@ -53,3 +53,8 @@ variable "azurerm_version_constraint" {
   type        = string
   default     = "~> 2.0"
 }
+
+variable "key_vault_soft_delete_retention" {
+  description = "Specify the number of days that a secret should be retained in key vault's soft deletion. (7-90)"
+  default     = 90
+}
